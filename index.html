@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="7-Day Weather Forecast for Major European Cities">
+    <title> European travel agency - European Weather Forecast</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzNjUyOXwwfDF8c2VhcmNofDJ8fHdlYXRoZXJ8ZW58MHx8fHwxNjg5NTY1NzQy&ixlib=rb-4.0.3&q=80&w=1080');
+        
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+            color: #fff;
+            text-align: center;
+        }
+
+        .header {
+            margin-top: 30px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: #2d2d2b;
+            margin: 0;
+        }
+
+        .header h2 {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .search-container {
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        .search-container input {
+            width: 60%;
+            padding: 10px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .search-container button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .forecast-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .forecast-card {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 10px;
+            border-radius: 10px;
+            width: 120px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .forecast-card img {
+            width: 50px;
+            margin-bottom: 10px;
+        }
+
+        .forecast-card h3 {
+            font-size: 1rem;
+            margin: 5px 0;
+            color: #ffeb3b;
+        }
+
+        .forecast-card p {
+            font-size: 0.9rem;
+            margin: 2px 0;
+            color: #ffffff;
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1> Travel Agency</h1>
+        <br>
+        <h1> European Weather Forecast</h1>
+        <br>
+        <h2> Get the 7-Day Weather Forecast for Major European Cities</h2>
+        <br>
+        <br>
+
+        <div class="search-container">
+        <input type="text" id="cityInput" placeholder="Enter European City (e.g., Paris)">
+        <button onclick="getWeather()">Get Forecast</button>
+        </div>
+
+        <br>
+        <footer> ⚠️ This is a demo application. Weather data is provided by 7timer.info. </footer>
+        <br>
+        <p> Note: The weather forecast is available for major European cities only.</p>
+        <br>
+        <br>
+
+    </div>
+<br>
+    
+
+    <div id="forecast" class="forecast-container"></div>
+
+
+    <script>
+        async function getWeather() {
+            const city = document.getElementById("cityInput").value.trim();
+            if (!city) {
+                alert("Please enter a city name.");
+                return;
+            }
+
+            const cityCoordinates = await getCityCoordinates(city);
+            if (!cityCoordinates) {
+                alert("City not found. Please enter a valid European city.");
+                return;
+            }
+
+            const { lat, lon } = cityCoordinates;
+            const apiUrl = `https://www.7timer.info/bin/api.pl?lon=${lon}&lat=${lat}&product=civil&output=json`;
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                displayWeather(data);
+            } catch (error) {
+                alert("Unable to retrieve weather data. Please try again later.");
+            }
+        }
+
+        async function getCityCoordinates(city) {
+            const cityList = {
+                "paris": { lat: 48.8566, lon: 2.3522 },
+                "london": { lat: 51.5074, lon: -0.1278 },
+                "berlin": { lat: 52.52, lon: 13.405 },
+                "madrid": { lat: 40.4168, lon: -3.7038 },
+                "rome": { lat: 41.9028, lon: 12.4964 },
+                "stockholm": { lat: 59.3293, lon: 18.0686 }
+            };
+
+            return cityList[city.toLowerCase()] || null;
+        }
+
+        function displayWeather(data) {
+            const forecastContainer = document.getElementById("forecast");
+            forecastContainer.innerHTML = "";
+
+            const currentDate = new Date();
+
+            data.dataseries.slice(0, 7).forEach((day, index) => {
+                const forecastDate = new Date();
+                forecastDate.setDate(currentDate.getDate() + index);
+
+                const dayDiv = document.createElement("div");
+                dayDiv.className = "forecast-card";
+                dayDiv.innerHTML = `
+                    <h3>${forecastDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</h3>
+                   
+                    <p><strong>${day.weather}</strong></p>
+                    <p>High: ${day.temp2m}°C</p>
+                    <p>Low: ${Math.max(day.temp2m - 5, 0)}°C</p>
+                `;
+                forecastContainer.appendChild(dayDiv);
+            });
+        }
+    </script>
+</body>
+</html>
